@@ -2,7 +2,7 @@
 
 Sistema de gestión de proyectos colaborativos entre artistas, con microservicios para notificaciones y emails.
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -69,39 +69,39 @@ Sistema de gestión de proyectos colaborativos entre artistas, con microservicio
   - Consumo de eventos de Kafka
   - Registro de logs de envíos
 
-## 📋 Características de la Aplicación
+## Características de la Aplicación
 
 ### Gestión de Usuarios
-- ✅ Registro de artistas (nombre, alias, teléfono, correo)
-- ✅ Autenticación con JWT
-- ✅ Dos tipos de usuarios: Admin y Artista
-- ✅ Perfiles públicos de artistas
+- Registro de artistas (nombre, alias, teléfono, correo)
+- Autenticación con JWT
+- Dos tipos de usuarios: Admin y Artista
+- Perfiles públicos de artistas
 
 ### Gestión de Skills
-- ✅ Agregar skills al perfil
-- ✅ Niveles de skill (beginner, intermediate, advanced, expert)
-- ✅ Descripción de experiencia
+- Agregar skills al perfil
+- Niveles de skill (beginner, intermediate, advanced, expert)
+- Descripción de experiencia
 
 ### Gestión de Proyectos
-- ✅ Crear proyectos con skills requeridos
-- ✅ Filtrar proyectos por skills/categorías
-- ✅ Dashboard de proyectos abiertos
-- ✅ Editar proyecto (solo creador)
-- ✅ Seguimiento de progreso
+- Crear proyectos con skills requeridos
+- Filtrar proyectos por skills/categorías
+- Dashboard de proyectos abiertos
+- Editar proyecto (solo creador)
+- Seguimiento de progreso
 
 ### Gestión de Tareas
-- ✅ Crear tareas en proyectos
-- ✅ Asignar tareas a miembros
-- ✅ Estados de tarea (todo, in_progress, review, done)
-- ✅ Editar tareas (solo creador del proyecto)
+- Crear tareas en proyectos
+- Asignar tareas a miembros
+- Estados de tarea (todo, in_progress, review, done)
+- Editar tareas (solo creador del proyecto)
 
 ### Gestión de Membresía
-- ✅ Solicitar membresía a proyectos
-- ✅ Aceptar/rechazar solicitudes
-- ✅ Notificaciones de nuevas solicitudes
-- ✅ Eliminar colaboradores (solo creador)
+- Solicitar membresía a proyectos
+- Aceptar/rechazar solicitudes
+- Notificaciones de nuevas solicitudes
+- Eliminar colaboradores (solo creador)
 
-## 🔧 Instalación y Configuración
+## Instalación y Configuración
 
 ### Requisitos
 - Docker y Docker Compose
@@ -163,7 +163,7 @@ cp .env.example .env
 python -m uvicorn app.main:app --reload --port 8003
 ```
 
-## 📚 Endpoints API
+## Endpoints API
 
 ### Notificaciones Service
 
@@ -187,7 +187,7 @@ GET    /api/v1/emails/stats                      - Estadísticas
 GET    /api/v1/emails/health                     - Health check
 ```
 
-## 🔄 Eventos Kafka
+## Eventos Kafka
 
 ### Topics
 
@@ -227,7 +227,7 @@ GET    /api/v1/emails/health                     - Health check
 }
 ```
 
-## 🗄️ Base de Datos
+## Base de Datos
 
 Se utilizan las siguientes tablas:
 - `users` - Usuarios del sistema
@@ -241,14 +241,14 @@ Se utilizan las siguientes tablas:
 - `notifications` - Notificaciones
 - `email_logs` - Registro de emails
 
-## 🔐 Seguridad
+## Seguridad
 
 - Autenticación JWT en el backend
 - Validación de permisos en operaciones
 - CORS configurado en todos los servicios
 - Validación de entrada con Pydantic
 
-## 📊 Monitoreo
+## Monitoreo
 
 ### Health Checks
 - `GET /health` - Verificación de estado en cada servicio
@@ -257,7 +257,7 @@ Se utilizan las siguientes tablas:
 ### HAProxy Stats
 - `GET http://localhost:8080/stats` - Dashboard de HAProxy
 
-## 🛠️ Desarrollo
+## Desarrollo
 
 ### Agregar Nueva Notificación
 
@@ -281,25 +281,10 @@ kafka_producer.send("notifications", {
 2. Usar al publicar evento en Kafka
 3. El servicio renderiza con Jinja2
 
-## 🚀 Despliegue
+## Despliegue
 
 ### Con Docker Compose
 ```bash
 docker-compose up -d
 ```
 
-### Con Kubernetes (futuro)
-Preparar manifests en `k8s/` para despliegue en cluster
-
-## 📝 Licencia
-
-MIT
-
-## 👥 Contribuciones
-
-Las contribuciones son bienvenidas. Por favor:
-1. Fork el proyecto
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
