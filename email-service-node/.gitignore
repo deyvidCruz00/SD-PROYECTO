@@ -1,0 +1,33 @@
+# Node.js específico para email-service
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+package-lock.json
+
+# Environment variables (nunca subir credenciales)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Logs específicos del servicio
+logs/*.log
+logs/*.txt
+!logs/.gitkeep
+
+# Archivos temporales de email
+email-temp/
+temp-emails/
+
+# Archivos de prueba
+test-*.json
+*-test.json
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock

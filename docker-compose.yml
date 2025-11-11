@@ -91,19 +91,29 @@ services:
       retries: 5
       start_period: 10s
 
-  # Email Service
+  # Email Service (Node.js + Express + Nodemailer)
   email-service:
     build:
-      context: ./email-service
+      context: ./email-service-node
       dockerfile: Dockerfile
     container_name: email_service
+    restart: unless-stopped
     environment:
-      SERVICE_PORT: 8003
-      KAFKA_BROKER: kafka:9092
-      KAFKA_EMAIL_TOPIC: emails
+      PORT: 8003
+      SERVICE_NAME: email-service-node
       SMTP_HOST: smtp.gmail.com
       SMTP_PORT: 587
-      LOG_LEVEL: INFO
+      SMTP_SECURE: false
+      SMTP_USER: pruebalogin10@gmail.com
+      SMTP_PASS: oaax xfiw ifis neia
+      SMTP_FROM_EMAIL: pruebalogin10@gmail.com
+      SMTP_FROM_NAME: Colabora App
+      KAFKA_BROKER: kafka:9092
+      KAFKA_EMAIL_TOPIC: emails
+      KAFKA_GROUP_ID: email-service-group
+      NODE_ENV: production
+      LOG_LEVEL: info
+      KAFKAJS_NO_PARTITIONER_WARNING: 1
     ports:
       - "8003:8003"
     depends_on:
@@ -111,11 +121,14 @@ services:
         condition: service_started
     networks:
       - microservices_network
+    volumes:
+      - ./email-service-node/logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8003/api/v1/emails/health"]
       timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 20s
+      interval: 30s
 
   # Backend Principal (Spring Boot) - Placeholder
   backend:
