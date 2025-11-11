@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: proyectos_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka_broker
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    networks:
+      - microservices_network
+
+  # Zookeeper para Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - microservices_network
+
+  # Redis para caché y sesiones
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 20s
+      retries: 10
+
+  # Notificaciones Service
+  notifications-service:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile
+    container_name: notifications_service
+    environment:
+      SERVICE_PORT: 8002
+      KAFKA_BROKER: kafka:9092
+      KAFKA_NOTIFICATION_TOPIC: notifications
+      LOG_LEVEL: INFO
+    ports:
+      - "8002:8002"
+    depends_on:
+      kafka:
+        condition: service_started
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # Email Service
+  email-service:
+    build:
+      context: ./email-service
+      dockerfile: Dockerfile
+    container_name: email_service
+    environment:
+      SERVICE_PORT: 8003
+      KAFKA_BROKER: kafka:9092
+      KAFKA_EMAIL_TOPIC: emails
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      LOG_LEVEL: INFO
+    ports:
+      - "8003:8003"
+    depends_on:
+      kafka:
+        condition: service_started
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # Backend Principal (Spring Boot) - Placeholder
+  backend:
+    image: openjdk:17-jdk-slim
+    container_name: backend_principal
+    ports:
+      - "8001:8001"
+    networks:
+      - microservices_network
+    environment:
+      KAFKA_BROKER: kafka:9092
+      DATABASE_URL: jdbc:mysql://mysql:3306/proyectos_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  # API Gateway (HAProxy) - opcional pero recomendado
+  api-gateway:
+    image: haproxy:2.8-alpine
+    container_name: api_gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - notifications-service
+      - email-service
+    networks:
+      - microservices_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  microservices_network:
+    driver: bridge
