@@ -4,89 +4,9 @@
 
 Sistema de microservicios para gestión de proyectos colaborativos.Sistema de gestión de proyectos colaborativos entre artistas, con microservicios para notificaciones y emails.
 
+## Servicios
 
-
-## 🏗️ Arquitectura## Arquitectura
-
-
-
-- **Backend**: Spring Boot (Puerto 8001)```
-
-- **Notifications Service**: Python FastAPI (Puerto 8002) ┌─────────────────────────────────────────────────────────────────┐
-
-- **Email Service**: Node.js Express (Puerto 8003)│                        Cliente (Navegador)                      │
-
-- **API Gateway**: HAProxy (Puerto 8080)└────────────────────────┬────────────────────────────────────────┘
-
-- **Messaging**: Apache Kafka                         │
-
-- **Database**: MySQL                         ▼
-
-- **Cache**: Redis┌─────────────────────────────────────────────────────────────────┐
-
-│              API Gateway (HAProxy) - Puerto 8080                 │
-
-## 🚀 Inicio Rápido└────────────────────────┬────────────────────────────────────────┘
-
-                         │
-
-```bash         ┌───────────────┼───────────────┐
-
-# Iniciar todos los servicios         │               │               │
-
-docker-compose up -d         ▼               ▼               ▼
-
-    ┌────────┐      ┌──────────┐    ┌────────┐
-
-# Verificar estado    │Backend │      │Notif.    │    │Email   │
-
-docker-compose ps    │(8001)  │      │Service   │    │Service │
-
-    │Spring  │      │(8002)    │    │(8003)  │
-
-# Ver logs    │Boot    │      │FastAPI   │    │FastAPI │
-
-docker-compose logs -f    └────┬───┘      └────┬─────┘    └───┬────┘
-
-```         │               │              │
-
-         └───────────────┼──────────────┘
-
-## 📡 Endpoints                         │
-
-                    ┌────▼────┐
-
-### Email Service                    │  Kafka   │
-
-```                    │Broker    │
-
-POST   /api/v1/emails/send      # Enviar email                    └────┬────┘
-
-GET    /api/v1/emails/health    # Health check                         │
-
-GET    /api/v1/emails/logs      # Logs de emails         ┌───────────────┼───────────────┐
-
-GET    /api/v1/emails/stats     # Estadísticas         │               │               │
-
-```         ▼               ▼               ▼
-
-    ┌────────┐      ┌──────────┐    ┌────────┐
-
-### Notifications Service      │MySQL   │      │Redis     │    │Logs    │
-
-```    │Base de │      │Cache     │    │Service │
-
-GET    /api/v1/notifications    # Obtener notificaciones    │datos   │      │Sesiones  │    │        │
-
-POST   /api/v1/notifications    # Crear notificación    └────────┘      └──────────┘    └────────┘
-
-GET    /api/v1/notifications/health  # Health check```
-
-```
-
-## 🚀 Servicios
-
-## 🐳 Servicios Docker
+## Servicios Docker
 
 ### Backend Principal (Spring Boot)
 
@@ -106,7 +26,7 @@ GET    /api/v1/notifications/health  # Health check```
 
   - Publicación de eventos a Kafka
 
-## 🔧 Configuración
+## Configuración
 
 ### Notifications Service (FastAPI)
 
@@ -126,7 +46,7 @@ SMTP_PASS=your-app-password  - WebSocket para notificaciones en tiempo real (opc
 
 ### Email Service (FastAPI)
 
-## 📊 Monitoreo- **Puerto**: 8003
+## Monitoreo- **Puerto**: 8003
 
 - **Funcionalidad**:
 
