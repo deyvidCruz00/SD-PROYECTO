@@ -24,9 +24,9 @@ services:
       - key: SENDGRID_API_KEY
         sync: false  # Configure manually in Render dashboard for security
       - key: SENDGRID_FROM_EMAIL
-        value: pruebalogin10@gmail.com
+        value: deyvid.cruz@uptc.edu.co
       - key: SENDGRID_FROM_NAME
-        value: PartySTApp
+        value: partyst
       
       # SMTP Configuration (fallback)
       - key: SMTP_HOST
