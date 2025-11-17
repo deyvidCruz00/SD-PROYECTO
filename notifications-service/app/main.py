@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 from app.config import settings
 from app.routes import notification
-from app.kafka.producer import KafkaConsumerService
+from app.database import init_database
 import threading
 
 # Configurar logging
@@ -39,7 +39,12 @@ def start_kafka_consumer():
     """Inicia el consumidor de Kafka en un hilo separado"""
     global kafka_consumer, kafka_consumer_thread
     
+    if not settings.KAFKA_ENABLED:
+        logger.info("Kafka está deshabilitado, no se iniciará el consumidor")
+        return
+    
     try:
+        from app.kafka.producer import KafkaConsumerService
         from app.services.notification_service import NotificationService
         
         notification_service = NotificationService()
@@ -67,6 +72,11 @@ def start_kafka_consumer():
 async def startup_event():
     """Evento al iniciar la aplicación"""
     logger.info(f"Iniciando {settings.SERVICE_NAME}...")
+    
+    # Inicializar base de datos
+    init_database()
+    
+    # Inicializar Kafka solo si está habilitado
     start_kafka_consumer()
 
 
@@ -84,7 +94,21 @@ async def read_root():
     return {
         "service": settings.SERVICE_NAME,
         "version": "1.0.0",
-        "status": "running"
+        "status": "running",
+        "kafka_enabled": settings.KAFKA_ENABLED
+    }
+
+
+@app.get("/health", tags=["health"])
+async def health_check():
+    """Health check endpoint"""
+    from app.database import is_database_available
+    
+    return {
+        "status": "healthy",
+        "service": settings.SERVICE_NAME,
+        "database": "connected" if is_database_available() else "disconnected",
+        "kafka": "enabled" if settings.KAFKA_ENABLED else "disabled"
     }
 
 

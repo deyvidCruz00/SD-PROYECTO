@@ -1,25 +1,34 @@
-const { Kafka } = require('kafkajs');
 const config = require('../config');
 const emailService = require('./emailService');
 
 class KafkaService {
   constructor() {
-    this.kafka = new Kafka({
-      clientId: config.SERVICE_NAME,
-      brokers: [config.KAFKA.BROKER]
-    });
-    
+    this.kafka = null;
     this.consumer = null;
     this.producer = null;
+    this.enabled = config.KAFKA.ENABLED;
   }
 
   async initialize() {
     try {
+      // Verificar si Kafka está habilitado
+      if (!this.enabled) {
+        console.log('⚠️  Kafka deshabilitado, saltando inicialización');
+        return;
+      }
+
       // Verificar si Kafka está configurado
       if (!config.KAFKA.BROKER || config.KAFKA.BROKER === '') {
         console.log('⚠️  Kafka no configurado, saltando inicialización');
         return;
       }
+
+      const { Kafka } = require('kafkajs');
+      
+      this.kafka = new Kafka({
+        clientId: config.SERVICE_NAME,
+        brokers: [config.KAFKA.BROKER]
+      });
 
       console.log('🔄 Intentando conectar a Kafka...');
       
@@ -79,6 +88,11 @@ class KafkaService {
 
   async publishEmail(emailData) {
     try {
+      if (!this.enabled) {
+        console.log('⚠️  Kafka deshabilitado, no se puede publicar mensaje');
+        return;
+      }
+
       if (!this.producer) {
         throw new Error('Producer no inicializado');
       }
@@ -109,6 +123,10 @@ class KafkaService {
     } catch (error) {
       console.error('❌ Error desconectando Kafka:', error);
     }
+  }
+
+  isEnabled() {
+    return this.enabled;
   }
 }
 

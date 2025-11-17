@@ -28,13 +28,31 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     status: 'running',
     timestamp: new Date().toISOString(),
+    environment: config.NODE_ENV,
+    kafka: {
+      enabled: kafkaService.isEnabled(),
+      status: kafkaService.isEnabled() ? 
+        (kafkaService.producer && kafkaService.consumer ? 'connected' : 'disconnected') : 
+        'disabled'
+    },
     endpoints: [
       'GET / - Service info',
-      'GET /api/v1/emails/health - Health check',
+      'GET /health - Application health check',
+      'GET /api/v1/emails/health - Email service health',
       'POST /api/v1/emails/send - Send email',
       'GET /api/v1/emails/logs - Get email logs',
       'GET /api/v1/emails/stats - Get statistics'
     ]
+  });
+});
+
+// Health check global
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    service: config.SERVICE_NAME,
+    version: '1.0.0'
   });
 });
 
@@ -63,17 +81,13 @@ async function initializeServices() {
   try {
     console.log('🚀 Iniciando servicios...');
     
-    // Inicializar Kafka solo si está configurado
-    if (config.KAFKA.BROKER && config.KAFKA.BROKER !== '') {
-      await kafkaService.initialize();
-    } else {
-      console.log('⚠️  Kafka no configurado, funcionando sin integración');
-    }
+    // Inicializar Kafka (maneja internamente si está habilitado o no)
+    await kafkaService.initialize();
     
     console.log('✅ Servicios inicializados');
   } catch (error) {
     console.error('❌ Error inicializando servicios:', error);
-    // No terminar el proceso, continuar sin Kafka
+    // No terminar el proceso, continuar sin servicios externos
   }
 }
 

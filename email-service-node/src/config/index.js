@@ -13,14 +13,20 @@ const config = {
     USER: process.env.SMTP_USER || '',
     PASS: process.env.SMTP_PASS || '',
     FROM_EMAIL: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER,
-    FROM_NAME: process.env.SMTP_FROM_NAME || 'Colabora App'
+    FROM_NAME: process.env.SMTP_FROM_NAME || 'PartySTApp'
   },
   
-  // Kafka Configuration
+  // Kafka Configuration (disabled for Render)
   KAFKA: {
+    ENABLED: process.env.KAFKA_ENABLED === 'true',
     BROKER: process.env.KAFKA_BROKER || 'localhost:9092',
     EMAIL_TOPIC: process.env.KAFKA_EMAIL_TOPIC || 'emails',
     GROUP_ID: process.env.KAFKA_GROUP_ID || 'email-service-group'
+  },
+  
+  // Database Configuration (PostgreSQL for Render)
+  DATABASE: {
+    URL: process.env.DATABASE_URL
   },
   
   // Environment
