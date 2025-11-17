@@ -16,7 +16,19 @@ services:
       - key: SERVICE_NAME
         value: email-service-render
       
-      # SMTP Configuration
+      # Email Provider Configuration
+      - key: EMAIL_PROVIDER
+        value: sendgrid
+      
+      # SendGrid Configuration  
+      - key: SENDGRID_API_KEY
+        sync: false  # Configure manually in Render dashboard for security
+      - key: SENDGRID_FROM_EMAIL
+        value: pruebalogin10@gmail.com
+      - key: SENDGRID_FROM_NAME
+        value: PartySTApp
+      
+      # SMTP Configuration (fallback)
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

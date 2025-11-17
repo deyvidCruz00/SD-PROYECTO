@@ -1,20 +1,48 @@
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const { v4: uuidv4 } = require('uuid');
 const config = require('../config');
 
 class EmailService {
   constructor() {
     this.transporter = null;
+    this.sendgridInitialized = false;
     this.emailLogs = []; // En producción, esto debería ser una base de datos
     this.stats = {
       total_sent: 0,
       total_failed: 0,
       total_pending: 0
     };
-    this.initializeTransporter();
+    this.initialize();
   }
 
-  async initializeTransporter() {
+  async initialize() {
+    console.log(`🔧 Inicializando email service con provider: ${config.EMAIL_PROVIDER}`);
+    
+    if (config.EMAIL_PROVIDER === 'sendgrid') {
+      await this.initializeSendGrid();
+    } else {
+      await this.initializeSMTP();
+    }
+  }
+
+  async initializeSendGrid() {
+    try {
+      if (!config.SENDGRID.API_KEY) {
+        throw new Error('SENDGRID_API_KEY no configurado');
+      }
+      
+      sgMail.setApiKey(config.SENDGRID.API_KEY);
+      this.sendgridInitialized = true;
+      console.log('✅ SendGrid configurado correctamente');
+    } catch (error) {
+      console.error('❌ Error configurando SendGrid:', error.message);
+      console.log('🔄 Fallback a SMTP...');
+      await this.initializeSMTP();
+    }
+  }
+
+  async initializeSMTP() {
     try {
       this.transporter = nodemailer.createTransport({
         host: config.SMTP.HOST,
@@ -45,19 +73,24 @@ class EmailService {
         processedBody = this.processTemplate(body, template_data);
       }
 
-      // Configurar el email
-      const mailOptions = {
-        from: `"${config.SMTP.FROM_NAME}" <${config.SMTP.FROM_EMAIL}>`,
-        to: to_name ? `"${to_name}" <${to_email}>` : to_email,
-        subject: subject,
-        html: this.formatEmailBody(processedBody),
-        text: processedBody
-      };
-
-      console.log(`📧 Enviando email a ${to_email}...`);
+      console.log(`📧 Enviando email a ${to_email} usando ${config.EMAIL_PROVIDER}...`);
       
-      // Enviar el email
-      const info = await this.transporter.sendMail(mailOptions);
+      let info;
+      if (config.EMAIL_PROVIDER === 'sendgrid' && this.sendgridInitialized) {
+        info = await this.sendWithSendGrid({
+          to_email,
+          to_name,
+          subject,
+          body: processedBody
+        });
+      } else {
+        info = await this.sendWithSMTP({
+          to_email,
+          to_name,
+          subject,
+          body: processedBody
+        });
+      }
       
       // Registro del email enviado
       const emailLog = {
@@ -69,6 +102,7 @@ class EmailService {
         created_at: timestamp,
         sent_at: new Date(),
         message_id: info.messageId,
+        provider: config.EMAIL_PROVIDER,
         event_type,
         related_user_id,
         related_project_id,
@@ -96,6 +130,7 @@ class EmailService {
         created_at: timestamp,
         sent_at: null,
         message_id: null,
+        provider: config.EMAIL_PROVIDER,
         event_type,
         related_user_id,
         related_project_id,
@@ -107,6 +142,41 @@ class EmailService {
       
       throw error;
     }
+  }
+
+  async sendWithSendGrid({ to_email, to_name, subject, body }) {
+    const msg = {
+      to: to_name ? { email: to_email, name: to_name } : to_email,
+      from: {
+        email: config.SENDGRID.FROM_EMAIL,
+        name: config.SENDGRID.FROM_NAME
+      },
+      subject: subject,
+      html: this.formatEmailBody(body),
+      text: body
+    };
+
+    const response = await sgMail.send(msg);
+    return {
+      messageId: response[0].headers['x-message-id'] || uuidv4(),
+      response: response
+    };
+  }
+
+  async sendWithSMTP({ to_email, to_name, subject, body }) {
+    if (!this.transporter) {
+      throw new Error('SMTP transporter no configurado');
+    }
+
+    const mailOptions = {
+      from: `"${config.SMTP.FROM_NAME}" <${config.SMTP.FROM_EMAIL}>`,
+      to: to_name ? `"${to_name}" <${to_email}>` : to_email,
+      subject: subject,
+      html: this.formatEmailBody(body),
+      text: body
+    };
+
+    return await this.transporter.sendMail(mailOptions);
   }
 
   processTemplate(template, data) {
@@ -135,6 +205,8 @@ class EmailService {
     return {
       status: 'healthy',
       service: config.SERVICE_NAME,
+      email_provider: config.EMAIL_PROVIDER,
+      sendgrid_configured: this.sendgridInitialized,
       smtp_configured: !!this.transporter,
       timestamp: new Date().toISOString()
     };
