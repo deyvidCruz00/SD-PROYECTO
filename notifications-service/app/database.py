@@ -24,11 +24,18 @@ def init_database():
         return
     
     try:
+        # Convert postgres:// to postgresql+psycopg:// for psycopg3 support
+        db_url = SQLALCHEMY_DATABASE_URL
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif db_url.startswith("postgresql://"):
+            db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+        
         engine = create_engine(
-            SQLALCHEMY_DATABASE_URL,
+            db_url,
             pool_pre_ping=True,
             pool_recycle=300,
-            connect_args={"sslmode": "require"} if "render.com" in SQLALCHEMY_DATABASE_URL else {}
+            connect_args={"sslmode": "require"} if "render.com" in db_url else {}
         )
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         
