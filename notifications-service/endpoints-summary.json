@@ -1,0 +1,271 @@
+{
+  "service": "Notifications Service",
+  "baseUrl": "https://notifications-service-mkdx.onrender.com",
+  "version": "1.0.0",
+  "description": "Microservicio de notificaciones para el sistema de proyectos colaborativos",
+  "endpoints": [
+    {
+      "name": "Root - Información del Servicio",
+      "method": "GET",
+      "path": "/",
+      "description": "Información general del servicio",
+      "parameters": [],
+      "requestBody": null,
+      "responseExample": {
+        "service": "notifications-service",
+        "version": "1.0.0",
+        "status": "running",
+        "kafka_enabled": true
+      }
+    },
+    {
+      "name": "Health Check General",
+      "method": "GET",
+      "path": "/health",
+      "description": "Estado detallado del servicio incluyendo base de datos y Kafka",
+      "parameters": [],
+      "requestBody": null,
+      "responseExample": {
+        "status": "healthy",
+        "service": "notifications-service",
+        "database": "connected",
+        "kafka": "enabled"
+      }
+    },
+    {
+      "name": "Health Check Notificaciones",
+      "method": "GET",
+      "path": "/notifications/health",
+      "description": "Verificación de salud del servicio de notificaciones",
+      "parameters": [],
+      "requestBody": null,
+      "responseExample": {
+        "status": "healthy",
+        "service": "notifications-service"
+      }
+    },
+    {
+      "name": "Obtener Notificaciones de Usuario",
+      "method": "GET",
+      "path": "/notifications",
+      "description": "Recupera todas las notificaciones de un usuario específico ordenadas por fecha descendente",
+      "parameters": [
+        {
+          "name": "userid",
+          "type": "query",
+          "required": true,
+          "description": "ID del usuario",
+          "example": "user123"
+        }
+      ],
+      "requestBody": null,
+      "responseExample": {
+        "success": true,
+        "message": "Notificaciones obtenidas exitosamente",
+        "body": {
+          "notifications": [
+            {
+              "notificationid": "abc123-def456-ghi789",
+              "title": "Nueva tarea asignada",
+              "description": "Se te ha asignado una nueva tarea en el proyecto X",
+              "type": "informative",
+              "date": "2025-11-20T10:30:00",
+              "wasRead": false
+            },
+            {
+              "notificationid": "xyz789-uvw456-rst123",
+              "title": "Tarea completada",
+              "description": "La tarea fue marcada como completada",
+              "type": "success",
+              "date": "2025-11-19T15:20:00",
+              "wasRead": true
+            }
+          ]
+        }
+      },
+      "curlExample": "curl \"https://notifications-service-mkdx.onrender.com/notifications?userid=user123\"",
+      "powershellExample": "Invoke-RestMethod -Uri \"https://notifications-service-mkdx.onrender.com/notifications?userid=user123\" -Method Get"
+    },
+    {
+      "name": "Marcar Notificación como Leída",
+      "method": "PATCH",
+      "path": "/notifications/read",
+      "description": "Marca una notificación específica como leída",
+      "parameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "schema": {
+          "userid": {
+            "type": "string",
+            "required": true,
+            "description": "ID del usuario",
+            "example": "user123"
+          },
+          "notificationid": {
+            "type": "string",
+            "required": true,
+            "description": "ID de la notificación",
+            "example": "abc123-def456-ghi789"
+          }
+        },
+        "example": {
+          "userid": "user123",
+          "notificationid": "abc123-def456-ghi789"
+        }
+      },
+      "responseExample": {
+        "success": true,
+        "message": "Notificación marcada como leída"
+      },
+      "errorResponseExample": {
+        "success": false,
+        "message": "Notificación no encontrada"
+      },
+      "curlExample": "curl -X PATCH https://notifications-service-mkdx.onrender.com/notifications/read -H \"Content-Type: application/json\" -d '{\"userid\":\"user123\",\"notificationid\":\"abc123\"}'",
+      "powershellExample": "$body = @{ userid = \"user123\"; notificationid = \"abc123\" } | ConvertTo-Json\nInvoke-RestMethod -Uri \"https://notifications-service-mkdx.onrender.com/notifications/read\" -Method Patch -Body $body -ContentType \"application/json\""
+    },
+    {
+      "name": "Eliminar Notificación",
+      "method": "DELETE",
+      "path": "/notifications",
+      "description": "Elimina una notificación específica del usuario",
+      "parameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "schema": {
+          "userid": {
+            "type": "string",
+            "required": true,
+            "description": "ID del usuario",
+            "example": "user123"
+          },
+          "notificationid": {
+            "type": "string",
+            "required": true,
+            "description": "ID de la notificación",
+            "example": "abc123-def456-ghi789"
+          }
+        },
+        "example": {
+          "userid": "user123",
+          "notificationid": "abc123-def456-ghi789"
+        }
+      },
+      "responseExample": {
+        "success": true,
+        "message": "Notificación eliminada exitosamente"
+      },
+      "errorResponseExample": {
+        "success": false,
+        "message": "Notificación no encontrada"
+      },
+      "curlExample": "curl -X DELETE https://notifications-service-mkdx.onrender.com/notifications -H \"Content-Type: application/json\" -d '{\"userid\":\"user123\",\"notificationid\":\"abc123\"}'",
+      "powershellExample": "$body = @{ userid = \"user123\"; notificationid = \"abc123\" } | ConvertTo-Json\nInvoke-RestMethod -Uri \"https://notifications-service-mkdx.onrender.com/notifications\" -Method Delete -Body $body -ContentType \"application/json\""
+    },
+    {
+      "name": "Marcar Notificación como Leída",
+      "method": "PATCH",
+      "path": "/notifications/read",
+      "description": "Marca una notificación específica como leída",
+      "parameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "schema": {
+          "userid": {
+            "type": "string",
+            "required": true,
+            "description": "ID del usuario",
+            "example": "user123"
+          },
+          "notificationid": {
+            "type": "string",
+            "required": true,
+            "description": "ID de la notificación",
+            "example": "abc123-def456-ghi789"
+          }
+        },
+        "example": {
+          "userid": "user123",
+          "notificationid": "abc123-def456-ghi789"
+        }
+      },
+      "responseExample": {
+        "success": true,
+        "message": "Notificación marcada como leída"
+      },
+      "errorResponseExample": {
+        "success": false,
+        "message": "Notificación no encontrada"
+      },
+      "curlExample": "curl -X PATCH https://notifications-service-mkdx.onrender.com/notifications/read -H \"Content-Type: application/json\" -d '{\"userid\":\"user123\",\"notificationid\":\"abc123\"}'",
+      "powershellExample": "$body = @{ userid = \"user123\"; notificationid = \"abc123\" } | ConvertTo-Json\nInvoke-RestMethod -Uri \"https://notifications-service-mkdx.onrender.com/notifications/read\" -Method Patch -Body $body -ContentType \"application/json\""
+    },
+    {
+      "name": "Eliminar Notificación",
+      "method": "DELETE",
+      "path": "/notifications",
+      "description": "Elimina una notificación específica del usuario",
+      "parameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "schema": {
+          "userid": {
+            "type": "string",
+            "required": true,
+            "description": "ID del usuario",
+            "example": "user123"
+          },
+          "notificationid": {
+            "type": "string",
+            "required": true,
+            "description": "ID de la notificación",
+            "example": "abc123-def456-ghi789"
+          }
+        },
+        "example": {
+          "userid": "user123",
+          "notificationid": "abc123-def456-ghi789"
+        }
+      },
+      "responseExample": {
+        "success": true,
+        "message": "Notificación eliminada exitosamente"
+      },
+      "errorResponseExample": {
+        "success": false,
+        "message": "Notificación no encontrada"
+      },
+      "curlExample": "curl -X DELETE https://notifications-service-mkdx.onrender.com/notifications -H \"Content-Type: application/json\" -d '{\"userid\":\"user123\",\"notificationid\":\"abc123\"}'",
+      "powershellExample": "$body = @{ userid = \"user123\"; notificationid = \"abc123\" } | ConvertTo-Json\nInvoke-RestMethod -Uri \"https://notifications-service-mkdx.onrender.com/notifications\" -Method Delete -Body $body -ContentType \"application/json\""
+    }
+  ],
+  "notificationTypes": [
+    {
+      "value": "warning",
+      "description": "Notificaciones de advertencia"
+    },
+    {
+      "value": "success",
+      "description": "Notificaciones de éxito"
+    },
+    {
+      "value": "informative",
+      "description": "Notificaciones informativas"
+    },
+    {
+      "value": "application",
+      "description": "Notificaciones de aplicación"
+    }
+  ],
+  "interactiveDocumentation": {
+    "swagger": "https://notifications-service-mkdx.onrender.com/docs",
+    "redoc": "https://notifications-service-mkdx.onrender.com/redoc"
+  },
+  "notes": [
+    "Los endpoints confían en que el backend Java ya validó al usuario mediante autenticación",
+    "Las notificaciones se crean automáticamente mediante eventos de Kafka desde otros servicios",
+    "No existe endpoint POST para crear notificaciones manualmente vía HTTP",
+    "La primera solicitud puede tardar 30-60 segundos si el servicio está en modo sleep (plan gratuito de Render)",
+    "El servicio está configurado con CORS permitiendo peticiones desde cualquier origen"
+  ]
+}

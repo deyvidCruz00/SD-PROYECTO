@@ -107,6 +107,46 @@ async def delete_notification(
     }
 
 
+@router.post("")
+async def create_notification(
+    request: NotificationCreate,
+    db: Session = Depends(get_database)
+):
+    """
+    Crea una nueva notificación manualmente (sin Kafka)
+    
+    Este endpoint permite al backend Java crear notificaciones directamente
+    sin necesidad de usar Kafka, ideal para despliegues en Render.
+    
+    Body esperado:
+    {
+        "userid": "123",
+        "title": "Título de la notificación",
+        "description": "Descripción detallada",
+        "type": "informative"
+    }
+    
+    Nota: La autenticación debe ser manejada por el backend Java.
+    """
+    try:
+        # Llamar al servicio para crear la notificación
+        notification = notification_service.create_notification(
+            notification_create=request,
+            db=db
+        )
+        
+        return {
+            "success": True,
+            "message": "Notificación creada exitosamente",
+            "notificationid": notification.notificationid
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al crear notificación: {str(e)}"
+        )
+
+
 @router.get("/health", tags=["health"])
 async def health_check():
     """Verificación de salud del servicio"""
